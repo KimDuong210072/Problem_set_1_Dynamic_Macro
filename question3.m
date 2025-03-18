@@ -58,11 +58,11 @@ function [y, P, sim_states] = rouwenhorst_simulation(N, gamma, sigma, mu, T)
 end
 
 rng(2025);  % Set seed for simulation
-N = 100;      % Number of states
+N = 7;      % Number of states
 gamma = 0.85;  
 sigma = 1;     
 mu = 0.5 / (1 - gamma); 
-T = 100; 
+T = 50; 
 [y, P, sim_states] = rouwenhorst_simulation(N, gamma, sigma, mu, T)
 figure;
 plot(1:T, sim_states, 'b', 'LineWidth', 1.5);
@@ -70,4 +70,33 @@ xlabel('Time');
 ylabel('State');
 title('Simulated AR(1) Process (Rouwenhorst)');
 grid on;
-
+%% Part 3d
+rng(2025); 
+N = 7;      
+gamma = 0.85;  
+gamma1 = 0.9;
+sigma = 1;     
+mu = 0.5 / (1 - gamma); 
+T = 50; 
+[y, P, sim_states] = rouwenhorst_simulation(N, gamma, sigma, mu, T)
+[y, P, sim_states1] = rouwenhorst_simulation(N, gamma1, sigma, mu, T)
+tiledlayout(2,2);
+plot(1:T, sim_states, 'b', 'LineWidth', 1.5);
+title('gamma 1');
+hold on;
+plot(1:T, sim_states1, 'r', 'LineWidth', 1.5);
+title('gamma 2');
+hold off;
+xlabel('x');
+ylabel('y');
+title('Gamma');
+%title('gamma 2');
+%plot(x, y1, 'r', 'LineWidth', 2); % Red sine wave
+%hold on;
+%plot(x, y2, 'b--', 'LineWidth', 2); 
+%figure;
+%plot(1:T, sim_states1, 'b', 'LineWidth', 1.5);
+%xlabel('Time');
+%ylabel('State');
+%title('Simulated AR(1) Process (Rouwenhorst)');
+grid on;
