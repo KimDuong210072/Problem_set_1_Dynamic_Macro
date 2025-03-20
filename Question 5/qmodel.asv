@@ -47,7 +47,7 @@ classdef qmodel
             %% Simulation parameters.
 
             par.seed = 2025; % Seed for simulation.
-            par.T = 20; % Number of time periods.
+            par.T = 10; % Number of time periods.
 
         end
         
@@ -57,7 +57,7 @@ classdef qmodel
             %% Capital grid.
 
             par.kss = (par.alpha/((1/par.beta)-(1-par.deltak)))^(1/(1-par.alpha)); % Steady state capital in the deterministic case.
-            par.hss = (par.gamma/par.deltah)^(1/(1-par.u)); 
+            par.hss = (par.gamma/((1/par.beta)-(1-par.deltah)))^(1/(1-par.gamma)); 
             par.klen = 50; % Grid size for k.
             par.kmax = 1.25*par.kss; % Upper bound for k.
             par.kmin = 0.75*par.kss; % Minimum k.

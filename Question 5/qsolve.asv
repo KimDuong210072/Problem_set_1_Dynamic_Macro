@@ -81,9 +81,12 @@ classdef qsolve
                 v0 = v1;
                 iter = iter + 1;
 
+                % Print every iteration
+                fprintf('Iteration: %d.\n', iter);
+
                 % Mark every 25 iterations for visibility
                 if mod(iter,25) == 0
-                    fprintf('Iteration: %d.\n', iter);
+                    fprintf('--------------------------\n');
                 end
             end
 
