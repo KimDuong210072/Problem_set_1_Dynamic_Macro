@@ -10,7 +10,7 @@
 
 %% Model class.
 
-classdef qmodel
+classdef model
     methods(Static)
         %% Set up structure array for model parameters and set the simulation parameters.
         
@@ -22,27 +22,30 @@ classdef qmodel
             %% Preferences.
             
             par.beta = 0.96; % Discount factor: Lower values of this mean that consumers are impatient and consume more today.
-            par.sigma = 2.00; % CRRA: Higher values of this mean that consumers are risk averse and do not want to consume too much today.
-            par.gamma = 2.5;
-            assert(par.beta > 0 && par.beta < 1.00,'Discount factor should be between 0 and 1.\n')
-            assert(par.sigma > 0,'CRRA should be at least 0.\n')
+            par.sigma = 7.0; % CRRA: Higher values of this mean that consumers are risk averse and do not want to consume too much today.
+            
+            assert(par.beta > 0.0 && par.beta < 1.0,'Discount factor should be between 0 and 1.\n')
+            assert(par.sigma > 0.0,'CRRA should be at least 0.\n')
 
             %% Technology.
 
-            par.alpha = 0.33; % Capital's share of income.
-            par.deltak = 0.05; % Depreciation rate of physical capital.
-            par.deltah = 0.4;
-            par.u = 0.35;
-            assert(par.alpha > 0 && par.alpha < 1.00,'Capital share of income should be between 0 and 1.\n')
-            assert(par.deltak >= 0 && par.deltak <= 1.00,'The depreciation rate should be from 0 to 1.\n')
-            assert(par.deltah >= 0 && par.deltah <= 1.00,'The depreciation rate should be from 0 to 1.\n')
+            par.alpha = 0.4; % Physical capital's share of income.
+            par.gamma = 1-par.alpha; % Human capital's share of income.
+            par.delta_k = 0.08; % Depreciation rate of physical capital.
+            par.delta_h = 0.6; % Depreciation rate of human capital.
 
-            par.sigma_eps = 0.07; % Std. dev of productivity shocks.
-            par.rho = 0.85; % Persistence of AR(1) process.
+            assert(par.alpha > 0.0 && par.alpha < 1.0,'Physical capital share of income should be between 0 and 1.\n')
+            assert(par.gamma > 0.0 && par.gamma < 1.0,'Human capital share of income should be between 0 and 1.\n')
+            assert(par.alpha + par.gamma == 1.0 ,'Production should have constant returns to scale.\n')
+            assert(par.delta_k >= 0.0 && par.delta_k <= 1.0,'The depreciation rate should be from 0 to 1.\n')
+            assert(par.delta_h >= 0.0 && par.delta_h <= 1.0,'The depreciation rate should be from 0 to 1.\n')
+
+            par.sigma_eps = 0.09; % Std. dev of productivity shocks.
+            par.rho = 0.87; % Persistence of AR(1) process.
             par.mu = 0.0; % Intercept of AR(1) process.
 
-            assert(par.sigma_eps > 0,'The standard deviation of the shock must be positive.\n')
-            assert(abs(par.rho) < 1,'The persistence must be less than 1 in absolute value so that the series is stationary.\n')
+            assert(par.sigma_eps > 0.0,'The standard deviation of the shock must be positive.\n')
+            assert(abs(par.rho) < 1.0,'The persistence must be less than 1 in absolute value so that the series is stationary.\n')
 
             %% Simulation parameters.
 
@@ -56,34 +59,37 @@ classdef qmodel
         function par = gen_grids(par)
             %% Capital grid.
 
-            par.kss = (par.alpha/((1/par.beta)-(1-par.deltak)))^(1/(1-par.alpha)); % Steady state capital in the deterministic case.
-            par.hss = (par.gamma/par.deltah)^(1/(1-par.u)); 
-            par.klen = 50; % Grid size for k.
-            par.kmax = 1.25*par.kss; % Upper bound for k.
-            par.kmin = 0.75*par.kss; % Minimum k.
-
-            par.hlen = 50; % Grid size for h.
-            par.hmax = 1.75*par.hss; % Upper bound for h.
-            par.hmin = 0.25*par.hss; % Minimum h.
-            
+            par.klen = 20; % Grid size for k.
+            par.kmax = 10.0; % Upper bound for k.
+            par.kmin = 2.0; % Minimum k.
             
             assert(par.klen > 5,'Grid size for k should be positive and greater than 5.\n')
             assert(par.kmax > par.kmin,'Minimum k should be less than maximum value.\n')
-            assert(par.hlen > 5,'Grid size for k should be positive and greater than 5.\n')
-            assert(par.hmax > par.hmin,'Minimum k should be less than maximum value.\n')
+            assert(par.kmin > 0.0,'Capital should always be positive.\n')
             
             par.kgrid = linspace(par.kmin,par.kmax,par.klen)'; % Equally spaced, linear grid for k and k'.
-            par.hgrid = linspace(par.hmin,par.hmax,par.hlen)'; % Equally spaced, linear grid for k and k.
+            
+            %% Human capital grid.
+
+            par.hlen = 20; % Grid size for h.
+            par.hmax = 10.0; % Upper bound for h.
+            par.hmin = 2.0; % Minimum h.
+            
+            assert(par.hlen > 5,'Grid size for h should be positive and greater than 5.\n')
+            assert(par.hmax > par.hmin,'Minimum h should be less than maximum value.\n')
+            assert(par.hmin > 0.0,'Human capital should always be positive.\n')
+            
+            par.hgrid = linspace(par.hmin,par.hmax,par.hlen)'; % Equally spaced, linear grid for h and h'.
 
             %% Discretized productivity process.
                   
-            par.Alen = 7; % Grid size for A.
+            par.Alen = 10; % Grid size for A.
             par.m = 3; % Scaling parameter for Tauchen.
             
             assert(par.Alen > 3,'Grid size for A should be positive and greater than 3.\n')
             assert(par.m > 0,'Scaling parameter for Tauchen should be positive.\n')
             
-            [Agrid,pmat] = qmodel.tauchen(par.mu,par.rho,par.sigma_eps,par.Alen,par.m); % Tauchen's Method to discretize the AR(1) process for log productivity.
+            [Agrid,pmat] = model.tauchen(par.mu,par.rho,par.sigma_eps,par.Alen,par.m); % Tauchen's Method to discretize the AR(1) process for log productivity.
             par.Agrid = exp(Agrid); % The AR(1) is in logs so exponentiate it to get A.
             par.pmat = pmat; % Transition matrix.
 
